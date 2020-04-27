@@ -1,0 +1,11 @@
+# Node modules #
+######################
+node_modules
+
+# Editor files #
+######################
+.idea
+
+# Env files #
+######################
+.env
