@@ -18,8 +18,17 @@ module.exports = {
             },
             createdAt: {
                 allowNull: false,
-                type: 'TIMESTAMP',
+                type: Sequelize.STRING,
                 defaultValue: Sequelize.literal('CURRENT_TIMESTAMP'),
+            },
+            username: {
+                allowNull: false,
+                unique: true,
+                type:  Sequelize.STRING,
+            },
+            password: {
+                allowNull: false,
+                type: Sequelize.STRING,
             },
             updatedAt: {
                 allowNull: false,

@@ -1,0 +1,12 @@
+{
+  "settings": {
+    "port": "8888",
+    "jwt_secret": "xMs6Viy7z8ZssjxfXKL0oaGRHOxtp0dQAS/5mE8NInDdMQaMjRYSe23GfKnXEsztwPxs5IGuqxBE+gdRjVVRQhG1ktLSbsXEmTNnBJxhPWoKCHDo1SNpsiBAFguG/x1w2Y34hNxFcwoTb/BaUqjIjmQokyXssSdSxycUeuieMI8GJcn7Co93Cf+iwl827WCPLZFNxr1p0iNeQqR/6GFeZeQ2J43pg7elXRE9C6itis4AiA8V9YWq1rxrg7HklU+Pu4V1ZxJSDWCgqe7tGlMEJt/gYIQmnvrNv0mduGcZY5HDqs096R0oV64jPOq0uuCHLj/DoTKKHvVpJJkThRwtIA==",
+    "jwt_exp": 86400,
+    "salt_round": 10,
+    "public_routes": [
+      "/users/registration",
+      "/users/login"
+    ]
+  }
+}

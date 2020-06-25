@@ -1,12 +1,11 @@
 'use strict';
-const combineRouters = require('koa-combine-routers')
+
+const combineRouters = require('koa-combine-routers');
 
 const users = require('./users');
-const posts = require('./posts');
 
 const router = combineRouters(
-    users,
-    posts
+    users
 );
 
 module.exports = router;

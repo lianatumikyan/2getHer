@@ -1,102 +1,83 @@
 'use strict';
 
+const {pick, get} = require('lodash');
+const httpResponseMessages = require('../constants/httpResponseMessages');
+
+const {generateToken} = require('../helpers/jwt');
+const {compare} = require('../helpers/password');
 const {User} = require('../models');
-const {users: database} = require('../data/db');
 
 const list = async (ctx) => {
-    const {limit = 10, offset = 0} = ctx.query;
-    const parsedOffset = parseInt(offset);
-    const parsedLimit = parseInt(limit);
+    const {limit, offset} = ctx.query;
+    const {rows: data, count: total} = await User.findAndCountAll({limit, offset});
 
-    const {rows: users, count: total} = await User.findAndCountAll({limit: parsedLimit, offset: parsedOffset});
-
-    return ctx.ok({
-        statusCode: 200,
-        statusName: 'ok',
-        users,
-        meta: {
-            total,
-            pageCount: Math.ceil(total / parsedLimit),
-            currentPage: Math.ceil(parsedOffset / parsedLimit) + 1,
-        }
-    })
+    return ctx.ok({ data, meta: {total} })
 };
 
 const create = async (ctx) => {
-    const {request: {body: {firstName, lastName}}} = ctx;
-    const data = {firstName, lastName};
-    try {
-        const user = await User.create(data);
-        return ctx.created({
-            statusName: 'created',
-            statusCode: 201,
-            user
-        })
-    } catch (e) {
-        return ctx.ok({
-            statusName: 'created',
-            statusCode: 422,
-            e
-        })
-    }
+    const info = pick(get(ctx, 'request.body'), ['username', 'password', 'firstName', 'lastName']);
+
+    const data = await User.create(info);
+
+    return ctx.created({data})
+
 };
 
-const update = (ctx) => {
-    // const {id: passedId} = ctx.params;
-    // const userIndex = database.findIndex(item => item.id === parseInt(passedId));
-    //
-    // if (userIndex < 0) {
-    //     return ctx.notFound({
-    //         statusCode: 404,
-    //         statusName: 'notFound',
-    //         message: 'error_user_not_found'
-    //     })
-    //
-    //
-    // const {request: {body: {firstName, lastName}}} = ctx;
-    // const data = {...database[userIndex], firstName, lastName};
-    // database[userIndex] = data;
+const update = async (ctx) => {
+    const {data: id} = get(ctx, 'state.user');
+    const info = pick(get(ctx, 'request.body'), ['firstName', 'lastName']);
 
-    return ctx.ok({
-        statusName: 'ok',
-        statusCode: 200
-    })
+    const [result, updated] = await User.update(info, {where: {id}, returning: true});
+
+    return !result ? ctx.notFound(httpResponseMessages.user_not_found) : ctx.ok({data: updated})
+
 };
 
-const remove = (ctx) => {
-    const {id: passedId} = ctx.params;
-    const userIndex = database.findIndex(item => item.id === parseInt(passedId));
+const remove = async (ctx) => {
+    const {data: id} = get(ctx, 'state.user');
 
-    if (userIndex < 0) {
-        return ctx.notFound({
-            statusCode: 404,
-            statusName: 'notFound',
-            message: 'error_user_not_found'
-        })
+    const user = await User.findOne({where: {id}});
+
+    if (!user) {
+        return ctx.notFound(httpResponseMessages.user_not_found)
     }
 
-    database.splice(userIndex, 1);
-
-    return ctx.noContent()
+    await User.destroy({where: {id}});
+    return ctx.ok()
 };
 
 const view = async (ctx) => {
-    const {id} = ctx.params;
-    const user = await User.findOne({ where: {id} });
+    const {data: id} = get(ctx, 'state.user');
+    const data = await User.findByPk(id);
 
-    if (!user) {
-        return ctx.notFound({
-            statusCode: 404,
-            statusName: 'notFound',
-            message: 'error_user_not_found'
-        })
+    if (!data) {
+        return ctx.notFound(httpResponseMessages.user_not_found)
     }
 
-    return ctx.ok({
-        statusName: 'ok',
-        statusCode: 200,
-        user
-    })
+    return ctx.ok({data})
 };
 
-module.exports = {list, view, create, update, remove};
+const login = async (ctx) => {
+    const {username, password} = pick(get(ctx, 'request.body'), ['username', 'password']);
+
+    const user = await User.findOne({where: {username}, attributes: ['password', 'id']});
+
+    if (!user || !compare(password, user.password)) {
+        return ctx.badRequest(httpResponseMessages.invalid_credentials)
+    }
+
+    return ctx.ok({access: {token: generateToken(user.id)}});
+};
+
+const me = async (ctx) => {
+    const {data: id} = get(ctx, 'state.user');
+    const user = await User.findByPk(id);
+
+    if (!user) {
+        return ctx.notFound(httpResponseMessages.user_not_found);
+    }
+
+    return ctx.ok({data: user});
+};
+
+module.exports = {list, view, create, update, remove, login, me};

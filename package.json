@@ -4,14 +4,21 @@
   "description": "some description",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "sequelize": "dotenv sequelize"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@koa/cors": "2",
+    "bcrypt": "^5.0.0",
+    "config": "^3.3.1",
+    "dotenv": "^8.2.0",
+    "jsonwebtoken": "^8.5.1",
     "koa": "^2.11.0",
     "koa-body": "^4.1.1",
     "koa-combine-routers": "^4.0.2",
+    "koa-jwt": "^4.0.0",
     "koa-respond": "^2.1.0",
     "koa-router": "^8.0.8",
     "pg": "^8.0.3",

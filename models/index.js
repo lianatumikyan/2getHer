@@ -2,13 +2,15 @@
 
 const fs = require('fs');
 const path = require('path');
+const config = require('config');
 const Sequelize = require('sequelize');
 const basename = path.basename(__filename);
-const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/../config/config.json')[env];
 const db = {};
 
-const sequelize = new Sequelize(config.database, config.username, config.password, config);
+const sequelize = new Sequelize(config.get('db.database'), config.get('db.username'), config.get('db.password'), {
+  host: config.get('db.host'),
+  dialect: config.get('db.dialect')
+});
 
 fs
   .readdirSync(__dirname)

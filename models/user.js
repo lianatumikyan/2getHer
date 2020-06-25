@@ -1,5 +1,9 @@
 'use strict';
 
+const {omit} = require('lodash');
+
+const {hash} = require('../helpers/password');
+
 module.exports = (sequelize, DataTypes) => {
     const User = sequelize.define('User', {
         id: {
@@ -20,7 +24,24 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: false,
             validate: {
                 notEmpty: {args: true},
-                len: {args: [1, 50]}
+                len: {
+                    args: [1, 50]
+                }
+            }
+        },
+        password: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            validate: {
+                notEmpty: {args: true}
+            }
+        },
+        username: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: true,
+            validate: {
+                isEmail: true
             }
         },
         updatedAt: {
@@ -38,8 +59,18 @@ module.exports = (sequelize, DataTypes) => {
         timestamps: true
     });
 
-    User.associate = function (models) {
-        // TODO add associations
+    const encryptPasswordIfChanged = (user) =>{
+        const password = user.password;
+        if (password && user.changed('password')) {
+            user.password = hash(password);
+        }
+    };
+
+    User.beforeCreate(encryptPasswordIfChanged);
+    User.beforeUpdate(encryptPasswordIfChanged);
+
+    User.prototype.toJSON = function () {
+       return omit({...this.get()}, ['password']);
     };
 
     return User;

@@ -1,0 +1,12 @@
+{
+  "db": {
+    "username": "DB_USER",
+    "password": "DB_PASS",
+    "database": "DB_NAME",
+    "dialect": "DB_DIALECT",
+    "host": "DB_HOST"
+  },
+  "settings": {
+    "env": "NODE_ENV"
+  }
+}
